@@ -44,12 +44,24 @@ const item3 = new Item({
 
 const defaultItems = [item1, item2, item3];
 
-Item.insertMany(defaultItems);
+//Item.insertMany(defaultItems);
 
 app.get("/", function(req, res) {
 
+  Item.find().then((foundItems) => {
 
-  res.render("list", {listTitle: "Today", newListItems: items});
+    //If there are no items then add some default items
+    if(foundItems.length === 0){
+      Item.insertMany(defaultItems);
+
+      //Redirecting to reload the page so that the user will see the new items
+      res.redirect('/');
+    }
+    else{
+      //If there are items then show them
+      res.render("list", {listTitle: "Today", newListItems: foundItems});
+    }
+   })
 
 });
 
