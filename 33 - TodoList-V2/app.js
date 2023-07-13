@@ -84,17 +84,21 @@ app.post("/", function(req, res){
   });;
   //Redirecting to reload the page so that the user will see the new items
   res.redirect('/');
+});
 
-  /*
-  if (req.body.list === "Work") {
+app.post("/delete", function(req, res){
+  
+  const checkedItemID = req.body.checkbox;
+  
+  //Removing the item with this id
+  Item.findByIdAndRemove({_id: checkedItemID}).exec().then((foundItem)=>{
+    console.log("Succesfully removed the item from Items collection");
+  }).catch((error)=>{
+    console.error(error);
+  });
 
-    workItems.push(item);
-    res.redirect("/work");
-  } else {
-    items.push(item);
-    res.redirect("/");
-  }
-  */
+  //Redirecting to reload the page so that the user will see the new items
+  res.redirect('/');
 });
 
 app.get("/work", function(req,res){
