@@ -52,7 +52,11 @@ app.get("/", function(req, res) {
 
     //If there are no items then add some default items
     if(foundItems.length === 0){
-      Item.insertMany(defaultItems);
+      Item.insertMany(defaultItems).then(()=>{
+        console.log("Succesfully saved defaultItems to DB.")
+      }).catch((error) =>{
+        console.error("There was an error inserting into DB: ", error)
+      });
 
       //Redirecting to reload the page so that the user will see the new items
       res.redirect('/');
@@ -67,19 +71,34 @@ app.get("/", function(req, res) {
 
 app.post("/", function(req, res){
 
-  const item = req.body.newItem;
+  //Saving the item passed
+  const newItem = req.body.newItem;
+  const item = new Item({
+    name: newItem
+  });
 
+  item.save().then(()=>{
+    console.log("Succesfully saved new Item to DB.")
+  }).catch((error) =>{
+    console.error("There was an error inserting into DB: ", error)
+  });;
+  //Redirecting to reload the page so that the user will see the new items
+  res.redirect('/');
+
+  /*
   if (req.body.list === "Work") {
+
     workItems.push(item);
     res.redirect("/work");
   } else {
     items.push(item);
     res.redirect("/");
   }
+  */
 });
 
 app.get("/work", function(req,res){
-  res.render("list", {listTitle: "Work List", newListItems: workItems});
+  //res.render("list", {listTitle: "Work List", newListItems: workItems});
 });
 
 app.get("/about", function(req, res){
