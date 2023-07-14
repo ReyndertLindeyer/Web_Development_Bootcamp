@@ -1,3 +1,5 @@
+require("dotenv").config();
+
 const express = require("express");
 const bodyParser = require("body-parser");
 const mongoose = require('mongoose');
@@ -11,7 +13,7 @@ app.use(bodyParser.urlencoded({extended: true}));
 app.use(express.static("public"));
 
 // MongoDB connection URL
-const mongoURL = 'mongodb://0.0.0.0:27017/todolistDB';
+const mongoURL = process.env.mongoURL;
 
 // Connect to MongoDB
 mongoose.connect(mongoURL, { useNewUrlParser: true, useUnifiedTopology: true })
@@ -51,8 +53,6 @@ const listSchema = new mongoose.Schema ({
 })
 
 const List = mongoose.model("List", listSchema);
-
-//Item.insertMany(defaultItems);
 
 app.get("/", function(req, res) {
 
