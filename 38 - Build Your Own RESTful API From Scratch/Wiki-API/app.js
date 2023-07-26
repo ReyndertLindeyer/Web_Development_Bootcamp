@@ -61,25 +61,56 @@ app.route("/articles")
             res.send("Successfully deleted all articles!");
         });
 
-app.route("/articles/:articleName")
+app.route("/articles/:articleTitle")
     .get(
         function (req, res) {
-            const searchedTitle = req.params.articleName;
+            const searchedTitle = req.params.articleTitle;
             Article.findOne({ title: searchedTitle }).then(foundArticle => {
                 res.send(foundArticle);
             }).catch((e) => {
                 console.log(e);
             });
         })
-    .put(
-        function (req, res) {
-            const searchedTitle = req.params.articleName;
-            Article.findOne({ title: searchedTitle }).then(foundArticle => {
-                res.send(foundArticle);
-            }).catch((e) => {
-                console.log(e);
-            });
-        });
+    .put(function (req, res) {
+        Article
+          .findOneAndUpdate(
+            {
+              title: req.params.articleTitle,
+            },
+            { title: req.body.title, content: req.body.content },
+            { overwrite: true }
+          )
+          .then((updatedArticle) => {
+            if (updatedArticle) {
+              console.log("Document updated successfully!");
+            } else {
+              console.log("Can't update!");
+            }
+            res.redirect("/articles");
+          })
+          .catch((err) => {
+            console.log(err);
+          });
+      }).patch(async (req, res) => {
+        try {
+          await Article.updateOne(
+            { title: req.params.articleTitle },
+            { $set: req.body },
+          );
+          res.send("Successfully updated article.")
+        } catch (error) {
+          res.send(error);
+        }
+      })
+      .delete(function (req, res) {
+        Article.deleteOne({ title: req.body.title })
+          .then(function () {
+            res.send("Successfully deleted");
+          })
+          .catch(function (err) {
+            res.send(err);
+          });
+      });
 
 app.listen(3000, function () {
     console.log("Server started on port 3000");
