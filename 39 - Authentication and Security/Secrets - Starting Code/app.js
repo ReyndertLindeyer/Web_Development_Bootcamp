@@ -43,7 +43,8 @@ mongoose.connect(mongoURL, { useNewUrlParser: true, useUnifiedTopology: true })
 const userSchema = new mongoose.Schema({
     email: String,
     password: String,
-    googleId: String
+    googleId: String,
+    secret: String
 })
 //Adding passportLocalMongoose to the User Schema
 userSchema.plugin(passportLocalMongoose);
@@ -104,7 +105,7 @@ app.get(
     "/auth/google/secrets",
     passport.authenticate("google", { failureRedirect: "/login" }),
     function (req, res) {
-        res.redirect("/secrets");
+        res.redirect("/submit");
     }
   );
 
@@ -185,18 +186,69 @@ app.route("/register")
             */
         });
 
-app.route("/secrets")
+app.route("/submit")
     .get(
-        function (req, res) {
-            if (req.isAuthenticated()) {
-                res.render("secrets");
+        function (req,res) {
+            if(req.isAuthenticated()){
+                res.render("submit");
             }
-            else {
+            else{
                 res.redirect("/login");
             }
-
-
+        }
+    )
+    .post(
+        function (req,res) {
+            const submittedSecret = req.body.secret;
+ 
+            User.findById(req.user.id)
+            .then((foundUser) => {
+                if (foundUser) {
+                    foundUser.secret = submittedSecret;
+                    foundUser.save()
+                        .then(() => {
+                            res.redirect("/secrets");
+                        });
+                } else {
+                    console.log("User not found");
+                }
+        })
+        .catch((err) => {
+            console.log(err);
         });
+        }
+    );
+
+app.route("/secrets")
+    .get(
+        function (req,res) {
+            User.find({ "secret": { $ne: null } })
+            .then((foundUsers) => {
+                if (foundUsers) {
+                    res.render("secrets", { usersWithSecrets: foundUsers });
+                }
+            })
+            .catch((err) => {
+                console.log(err);
+            });
+            /*
+            if (req.isAuthenticated()) {
+                const allSecrets = [];
+                User.find({'secrets' : {$ne:null}}).then(function (users) {
+                    users.forEach(function (user) {
+                        user.secrets.forEach(secret => {
+                            console.log(secret);
+                            allSecrets.push(secret);
+                        });
+                    });
+                res.render('secrets',{allSecrets:allSecrets});
+                });
+            } else {
+                res.redirect("/login");
+            };
+            */
+        }
+    );
 
 app.route("/logout")
     .get(
